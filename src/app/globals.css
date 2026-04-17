@@ -1,5 +1,55 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Estedad";
+  src: url("/font/Estedad-Thin.woff2") format("woff2");
+  font-weight: 100;
+}
+@font-face {
+  font-family: "Estedad";
+  src: url("/font/Estedad-ExtraLight.woff2") format("woff2");
+  font-weight: 200;
+}
+@font-face {
+  font-family: "Estedad";
+  src: url("/font/Estedad-Light.woff2") format("woff2");
+  font-weight: 300;
+}
+@font-face {
+  font-family: "Estedad";
+  src: url("/font/Estedad-Regular.woff2") format("woff2");
+  font-weight: 400;
+}
+@font-face {
+  font-family: "Estedad";
+  src: url("/font/Estedad-Medium.woff2") format("woff2");
+  font-weight: 500;
+}
+@font-face {
+  font-family: "Estedad";
+  src: url("/font/Estedad-SemiBold.woff2") format("woff2");
+  font-weight: 600;
+}
+@font-face {
+  font-family: "Estedad";
+  src: url("/font/Estedad-Bold.woff2") format("woff2");
+  font-weight: 700;
+}
+@font-face {
+  font-family: "Estedad";
+  src: url("/font/Estedad-ExtraBold.woff2") format("woff2");
+  font-weight: 800;
+}
+@font-face {
+  font-family: "Estedad";
+  src: url("/font/Estedad-Black.woff2") format("woff2");
+  font-weight: 900;
+}
+
+* {
+  font-family: "Estedad", sans-serif;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
