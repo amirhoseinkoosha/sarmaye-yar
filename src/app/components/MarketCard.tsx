@@ -3,16 +3,16 @@ export default function MarketCard() {
     <section className="card-elevated rounded-2xl p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-semibold text-slate-200">نمای کلی بازار</h2>
-        <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-semibold text-neonGreen ring-1 ring-emerald-400/25">
-          +۳٫۴۵٪
+        <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-semibold text-slate-400 ring-1 ring-white/10">
+          به زودی
         </span>
       </div>
 
       <div className="mt-5 grid grid-cols-3 gap-3">
         {[
-          { label: "شاخص کل", value: "۲٫۳M", tone: "text-cyan-200" },
-          { label: "ارزش معاملات", value: "۱۸٫۲K", tone: "text-violet-200" },
-          { label: "نمادهای مثبت", value: "۷۸٪", tone: "text-emerald-200" },
+          { label: "شاخص کل", value: "در حال بارگذاری", tone: "text-slate-400" },
+          { label: "ارزش معاملات", value: "به زودی", tone: "text-slate-400" },
+          { label: "نمادهای مثبت", value: "به زودی", tone: "text-slate-400" },
         ].map((item) => (
           <div
             key={item.label}

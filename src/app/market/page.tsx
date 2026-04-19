@@ -11,13 +11,10 @@ export default function MarketPage() {
 
         <section className="card-elevated mt-5 rounded-2xl p-5">
           <h2 className="text-sm font-medium text-slate-400">شاخص کل</h2>
-          <p
-            dir="ltr"
-            className="mt-2 text-3xl font-bold tracking-tight text-neonBlue"
-          >
-            2,346,120
+          <p className="mt-2 text-2xl font-bold tracking-tight text-slate-400">
+            در حال بارگذاری
           </p>
-          <p className="mt-2 text-sm font-semibold text-neonGreen">+۱٫۵۴٪</p>
+          <p className="mt-2 text-sm font-semibold text-slate-500">به زودی</p>
           <div className="mt-5 overflow-hidden rounded-xl border border-white/5 bg-black/25">
             <img
               src="/chart.png"
@@ -36,8 +33,8 @@ export default function MarketPage() {
             <Link key={item} href={`/symbol/${encodeURIComponent(item)}`}>
               <div className="card-elevated flex cursor-pointer items-center justify-between rounded-2xl px-4 py-3.5 transition hover:border-cyan-400/20">
                 <span className="font-medium">{item}</span>
-                <span className="rounded-lg bg-emerald-500/10 px-2.5 py-1 text-sm font-semibold text-neonGreen">
-                  +۲٫۱٪
+                <span className="rounded-lg bg-white/5 px-2.5 py-1 text-sm font-semibold text-slate-400">
+                  به زودی
                 </span>
               </div>
             </Link>

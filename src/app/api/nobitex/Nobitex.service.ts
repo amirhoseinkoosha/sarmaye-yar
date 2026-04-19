@@ -1,12 +1,14 @@
 import { NobitexTrade } from "@/Types/ApiRes";
 import axios from "axios";
 import { UsdtApiPayload } from "@/Types/ApiRes";
+import { ALLOWED_CURRENCIES, normalizeSymbol } from "@/utils/Helperfunctions";
 
+// Nobitex public API base URL, fallback to default if not found in env
 const NOBITEX_API_BASE_URL =
     process.env.NOBITEX_API_BASE_URL ?? "https://apiv2.nobitex.ir";
-const INTERNAL_API_BASE_URL = process.env.NEXT_PUBLIC_INTERNAL_API_BASE_URL ?? "";
 
-export async function fetchTrades(symbol: string) {
+// Fetch recent trades for a given symbol from Nobitex public API
+async function fetchTrades(symbol: string) {
     const url = `${NOBITEX_API_BASE_URL}/v2/trades/${encodeURIComponent(symbol)}`;
     const { data } = await axios.get<{ status?: string; trades?: NobitexTrade[] }>(
         url,
@@ -14,67 +16,53 @@ export async function fetchTrades(symbol: string) {
             headers: { accept: "application/json" },
         },
     );
+    // Validate Nobitex response
     if (data.status !== "ok" || !Array.isArray(data.trades)) {
-        throw new Error("پاسخ نوبیتکس نامعتبر است");
+        throw new Error("Invalid Nobitex response");
     }
     return data.trades;
 }
 
+// Fetch trades after normalizing the symbol (e.g. for orderbook explorer)
 export async function fetchOrderbookTrades(symbol: string): Promise<NobitexTrade[]> {
-    try {
-        const { data } = await axios.get<{ trades?: NobitexTrade[]; error?: string }>(
-            `${INTERNAL_API_BASE_URL}/api/nobitex/orderbook?symbol=${encodeURIComponent(symbol)}`,
-        );
-        if (data.error) {
-            throw new Error(data.error);
-        }
-        return data.trades ?? [];
-    } catch (e) {
-        if (axios.isAxiosError(e)) {
-            const msg =
-                (e.response?.data as { error?: string } | undefined)?.error ??
-                e.message ??
-                "خطا";
-            throw new Error(msg);
-        }
-        throw e instanceof Error ? e : new Error("خطا");
+    const normalized = normalizeSymbol(symbol);
+    if (!normalized) {
+        throw new Error("Invalid symbol");
     }
+    return fetchTrades(normalized);
 }
 
-export async function fetchUsdtMarket(): Promise<UsdtApiPayload> {
-    try {
-        const { data } = await axios.get<UsdtApiPayload & { error?: string }>(
-            `${INTERNAL_API_BASE_URL}/api/nobitex/market`,
-        );
-        if (data.error) {
-            throw new Error(data.error);
-        }
-        return data;
-    } catch (e) {
-        if (axios.isAxiosError(e)) {
-            const msg =
-                (e.response?.data as { error?: string } | undefined)?.error ??
-                e.message ??
-                "خطا";
-            throw new Error(msg);
-        }
-        throw e instanceof Error ? e : new Error("خطا");
+// Fetch USDT/IRR (or another pair) market stats (price etc) from stats API
+export async function fetchUsdtMarket(
+    srcCurrency: string = "usdt",
+    dstCurrency: string = "rls",
+): Promise<UsdtApiPayload> {
+    const src = srcCurrency.trim().toLowerCase();
+    const dst = dstCurrency.trim().toLowerCase();
+    // Check if both currencies are supported by Nobitex
+    if (!isAllowedCurrency(src) || !isAllowedCurrency(dst)) {
+        throw new Error("Invalid srcCurrency/dstCurrency");
     }
+
+    const payload = await fetchStatsPair(src, dst);
+    if (!payload) {
+        throw new Error("bad_upstream");
+    }
+    return payload;
 }
 
+// Stats API endpoint for market quotes and changes
 const NOBITEX_STATS_BASE_URL = `${NOBITEX_API_BASE_URL}/market/stats`;
-const ALLOWED_CURRENCIES = new Set(
-    "rls, btc, eth, ltc, usdt, xrp, bch, bnb, eos, xlm, etc, trx, pmn, doge, uni, dai, link, dot, aave, ada, shib, ftm, matic, axs, mana, sand, avax, mkr, gmt, atom, uma, w, rsr, wld, 1m_nft, flow, agld, ton, mask, snt, agix, algo, ssv, band, omg, comp, zrx, rdnt, imx, 1inch, mdt, sushi, bico, gmx, zro, bal, dao, gal, not, nmr, xmr, enj, apt, lrc, dydx, grt, near, cvx, 100k_floki, fil, sol, ldo, crv, aevo, qnt, om, woo, storj, ant, 1m_btt, magic, ape, rndr, hbar, lpt, glm, blur, wbtc, meme, ethfi, egala, arb, fet, skl, cvc, snx, jst, ens, trb, chz, xtz, api3, slp, t, bat, 1b_babydoge, celr, yfi, egld, one, 1m_pepe, usdc"
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean),
-);
 
-export function isAllowedCurrency(value: string): boolean {
+
+
+// Check whether a given currency string is allowed for Nobitex stats API
+function isAllowedCurrency(value: string): boolean {
     return ALLOWED_CURRENCIES.has(value);
 }
 
-export async function fetchStatsPair(
+// Fetch detailed pair stats such as price, best buy/sell, daily change, returns null for error or missing data
+async function fetchStatsPair(
     src: string,
     dst: string,
 ): Promise<UsdtApiPayload | null> {
@@ -95,6 +83,7 @@ export async function fetchStatsPair(
         headers: { accept: "application/json" },
     });
 
+    // Reject if stats payload is not ok
     if (data?.status !== "ok") return null;
 
     const pairKey = `${src}-${dst}`;

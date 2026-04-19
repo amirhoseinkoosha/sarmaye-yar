@@ -154,7 +154,7 @@ export default function UsdtLiveChart() {
 
       <div className="relative mt-2 flex items-center justify-between text-[11px] text-slate-500">
         <span className="flex items-center gap-2">
-          <span>منبع: Nobitex (market/stats)</span>
+          {/* <span>منبع: Nobitex (market/stats)</span> */}
           {data?.bestBuy != null && data?.bestSell != null ? (
             <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 font-mono text-[10px] text-slate-400">
               خرید {formatToman(data.bestBuy / 10)} / فروش{" "}
