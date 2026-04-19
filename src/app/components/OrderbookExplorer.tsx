@@ -1,13 +1,13 @@
 "use client";
 
-import axios from "axios";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { NobitexTrade } from "@/Types/ApiRes";
+import { fetchOrderbookTrades } from "@/app/api/nobitex/Nobitex.service";
 import {
   fmtPrice,
   NOBITEX_SYMBOLS,
   normalizeSymbol,
-} from "@/lib/Helperfunctions";
+} from "@/utils/Helperfunctions";
 
 export default function OrderbookExplorer() {
   const [query, setQuery] = useState("");
@@ -27,26 +27,11 @@ export default function OrderbookExplorer() {
     setLoading(true);
     setErr(null);
     try {
-      const { data: j } = await axios.get<{
-        trades?: NobitexTrade[];
-        error?: string;
-      }>(`/api/nobitex/trades?symbol=${encodeURIComponent(sym)}`);
-      if (j.error) {
-        throw new Error(j.error);
-      }
-      setRows(j.trades ?? []);
+      const trades = await fetchOrderbookTrades(sym);
+      setRows(trades);
     } catch (e) {
-      if (axios.isAxiosError(e)) {
-        setRows([]);
-        setErr(
-          (e.response?.data as { error?: string } | undefined)?.error ??
-            e.message ??
-            "خطا",
-        );
-      } else {
-        setRows([]);
-        setErr(e instanceof Error ? e.message : "خطا");
-      }
+      setRows([]);
+      setErr(e instanceof Error ? e.message : "خطا");
     } finally {
       setLoading(false);
     }

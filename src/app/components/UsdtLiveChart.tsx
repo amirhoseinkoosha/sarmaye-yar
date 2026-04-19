@@ -1,10 +1,10 @@
 "use client";
 
 import { NobitexOrderbookPayload } from "@/Types/ApiRes";
-import axios from "axios";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { formatToman, Status } from "@/lib/Helperfunctions";
-import { buildPath } from "@/lib/Helperfunctions";
+import { formatToman, Status } from "@/utils/Helperfunctions";
+import { buildPath } from "@/utils/Helperfunctions";
+import { fetchUsdtMarket } from "@/app/api/nobitex/Nobitex.service";
 
 export default function UsdtLiveChart() {
   const [status, setStatus] = useState<Status>("idle");
@@ -18,10 +18,7 @@ export default function UsdtLiveChart() {
       setStatus((s) => (s === "ready" ? s : "loading"));
     }
     try {
-      const { data: json } = await axios.get<
-        NobitexOrderbookPayload & { error?: string }
-      >("/api/usdt");
-      if ("error" in json && json.error) throw new Error(json.error);
+      const json = await fetchUsdtMarket();
       setData(json);
       setPriceHistory((prev) => {
         const next = [...prev, { time: Date.now(), priceToman: json.toman }];

@@ -6,6 +6,7 @@ export async function GET(request: Request) {
   const symbol = normalizeSymbol(
     new URL(request.url).searchParams.get("symbol") ?? "",
   );
+
   if (!symbol) {
     return NextResponse.json({ error: "نماد نامعتبر است" }, { status: 400 });
   }
