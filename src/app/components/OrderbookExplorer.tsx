@@ -2,16 +2,12 @@
 
 import axios from "axios";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { NobitexTrade } from "@/lib/nobitex";
-import { NOBITEX_SYMBOLS, normalizeSymbol } from "@/lib/nobitex";
-
-function fmtPrice(s: string) {
-  try {
-    return BigInt(s.split(".")[0] ?? s).toLocaleString("fa-IR");
-  } catch {
-    return s;
-  }
-}
+import type { NobitexTrade } from "@/Types/ApiRes";
+import {
+  fmtPrice,
+  NOBITEX_SYMBOLS,
+  normalizeSymbol,
+} from "@/lib/Helperfunctions";
 
 export default function OrderbookExplorer() {
   const [query, setQuery] = useState("");
@@ -134,7 +130,9 @@ export default function OrderbookExplorer() {
           آخرین معاملات ({rows.length.toLocaleString("fa-IR")} ردیف)
         </div>
         {loading && rows.length === 0 ? (
-          <p className="p-6 text-center text-sm text-slate-500">در حال دریافت…</p>
+          <p className="p-6 text-center text-sm text-slate-500">
+            در حال دریافت…
+          </p>
         ) : (
           <div className="max-h-[28rem] overflow-auto">
             <table className="w-full text-xs">

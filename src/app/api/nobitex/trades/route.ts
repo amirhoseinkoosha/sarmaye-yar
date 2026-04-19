@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { fetchTrades, normalizeSymbol } from "@/lib/nobitex";
+import { fetchTrades } from "@/lib/nobitex/nobitex";
+import { normalizeSymbol } from "@/lib/Helperfunctions";
 
 export async function GET(request: Request) {
   const symbol = normalizeSymbol(

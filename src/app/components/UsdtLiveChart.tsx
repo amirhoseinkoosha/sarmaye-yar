@@ -1,48 +1,33 @@
 "use client";
 
+import { NobitexOrderbookPayload } from "@/Types/ApiRes";
 import axios from "axios";
 import { useCallback, useEffect, useMemo, useState } from "react";
-
-type UsdtApiPayload = {
-  prices: [number, number][];
-  usd: number;
-  usd24hChange: number | null;
-  updatedAt: number;
-};
-
-type Status = "idle" | "loading" | "ready" | "error";
-
-function buildPath(points: { x: number; y: number }[]): string {
-  if (points.length === 0) return "";
-  const first = points[0];
-  let d = `M ${first.x.toFixed(2)} ${first.y.toFixed(2)}`;
-  for (let i = 1; i < points.length; i++) {
-    d += ` L ${points[i].x.toFixed(2)} ${points[i].y.toFixed(2)}`;
-  }
-  return d;
-}
-
-function formatUsd(n: number) {
-  return n.toLocaleString("en-US", {
-    minimumFractionDigits: 4,
-    maximumFractionDigits: 6,
-  });
-}
+import { formatToman, Status } from "@/lib/Helperfunctions";
+import { buildPath } from "@/lib/Helperfunctions";
 
 export default function UsdtLiveChart() {
   const [status, setStatus] = useState<Status>("idle");
-  const [data, setData] = useState<UsdtApiPayload | null>(null);
+  const [data, setData] = useState<NobitexOrderbookPayload | null>(null);
+  const [priceHistory, setPriceHistory] = useState<
+    { time: number; priceToman: number }[]
+  >([]);
 
   const load = useCallback(async (opts?: { background?: boolean }) => {
     if (!opts?.background) {
       setStatus((s) => (s === "ready" ? s : "loading"));
     }
     try {
-      const { data: json } = await axios.get<UsdtApiPayload & { error?: string }>(
-        "/api/usdt",
-      );
+      const { data: json } = await axios.get<
+        NobitexOrderbookPayload & { error?: string }
+      >("/api/usdt");
       if ("error" in json && json.error) throw new Error(json.error);
       setData(json);
+      setPriceHistory((prev) => {
+        const next = [...prev, { time: Date.now(), priceToman: json.toman }];
+        // حدود ۶ دقیقه تاریخچه (هر ۵ ثانیه) برای سبک ماندن UI
+        return next.slice(-72);
+      });
       setStatus("ready");
     } catch {
       if (!opts?.background) setStatus("error");
@@ -51,16 +36,15 @@ export default function UsdtLiveChart() {
 
   useEffect(() => {
     void load();
-    const id = window.setInterval(() => void load({ background: true }), 45_000);
+    const id = window.setInterval(() => void load({ background: true }), 5_000);
     return () => window.clearInterval(id);
   }, [load]);
 
   const { linePath, areaPath, minY, maxY } = useMemo(() => {
-    const prices = data?.prices ?? [];
-    if (prices.length < 2) {
+    if (priceHistory.length < 2) {
       return { linePath: "", areaPath: "", minY: 0, maxY: 1 };
     }
-    const values = prices.map(([, v]) => v);
+    const values = priceHistory.map((p) => p.priceToman);
     const rawMin = Math.min(...values);
     const rawMax = Math.max(...values);
     const pad = Math.max((rawMax - rawMin) * 0.35, 0.0002);
@@ -68,20 +52,19 @@ export default function UsdtLiveChart() {
     const max = rawMax + pad;
     const w = 100;
     const h = 44;
-    const pts = prices.map(([, v], i) => {
-      const x = (i / (prices.length - 1)) * w;
-      const t = max === min ? 0.5 : (v - min) / (max - min);
+    const pts = priceHistory.map((p, i) => {
+      const x = (i / (priceHistory.length - 1)) * w;
+      const t = max === min ? 0.5 : (p.priceToman - min) / (max - min);
       const y = h - t * (h - 4) - 2;
       return { x, y };
     });
     const line = buildPath(pts);
     const area =
-      line &&
-      `${line} L ${w.toFixed(2)} ${h.toFixed(2)} L 0 ${h.toFixed(2)} Z`;
+      line && `${line} L ${w.toFixed(2)} ${h.toFixed(2)} L 0 ${h.toFixed(2)} Z`;
     return { linePath: line, areaPath: area, minY: min, maxY: max };
-  }, [data]);
+  }, [priceHistory]);
 
-  const change = data?.usd24hChange ?? null;
+  const change = data?.dayChange ?? null;
   const changeClass =
     change == null
       ? "text-slate-400"
@@ -97,14 +80,14 @@ export default function UsdtLiveChart() {
       <div className="relative flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-xs font-medium uppercase tracking-wider text-cyan-200/80">
-            تتر (USDT)
+            تتر (USDTIRT)
           </p>
           {status === "ready" && data ? (
             <p
               dir="ltr"
               className="mt-1 font-mono text-2xl font-semibold tracking-tight text-white"
             >
-              ${formatUsd(data.usd)}
+              {formatToman(data.toman)} تومان
             </p>
           ) : status === "error" ? (
             <p className="mt-1 text-sm text-rose-300">خطا در دریافت داده</p>
@@ -134,8 +117,16 @@ export default function UsdtLiveChart() {
           >
             <defs>
               <linearGradient id="usdtFill" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stopColor="rgb(56, 189, 248)" stopOpacity="0.35" />
-                <stop offset="100%" stopColor="rgb(56, 189, 248)" stopOpacity="0" />
+                <stop
+                  offset="0%"
+                  stopColor="rgb(56, 189, 248)"
+                  stopOpacity="0.35"
+                />
+                <stop
+                  offset="100%"
+                  stopColor="rgb(56, 189, 248)"
+                  stopOpacity="0"
+                />
               </linearGradient>
               <linearGradient id="usdtLine" x1="0" x2="1" y1="0" y2="0">
                 <stop offset="0%" stopColor="rgb(34, 211, 238)" />
@@ -157,13 +148,23 @@ export default function UsdtLiveChart() {
           </svg>
         ) : (
           <div className="flex h-full items-center justify-center rounded-xl bg-white/5 text-sm text-slate-500">
-            {status === "error" ? "دوباره تلاش کنید" : "در حال بارگذاری نمودار…"}
+            {status === "error"
+              ? "دوباره تلاش کنید"
+              : "در حال بارگذاری نمودار…"}
           </div>
         )}
       </div>
 
       <div className="relative mt-2 flex items-center justify-between text-[11px] text-slate-500">
-        <span>منبع: CoinGecko (رایگان)</span>
+        <span className="flex items-center gap-2">
+          <span>منبع: Nobitex (market/stats)</span>
+          {data?.bestBuy != null && data?.bestSell != null ? (
+            <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 font-mono text-[10px] text-slate-400">
+              خرید {formatToman(data.bestBuy / 10)} / فروش{" "}
+              {formatToman(data.bestSell / 10)}
+            </span>
+          ) : null}
+        </span>
         <span className="font-mono text-slate-600">
           {data?.updatedAt
             ? new Date(data.updatedAt).toLocaleTimeString("fa-IR", {
@@ -187,7 +188,7 @@ export default function UsdtLiveChart() {
       {/* محور برای نوسان‌های ریز */}
       {status === "ready" && data && linePath ? (
         <p className="relative mt-1 text-center text-[10px] text-slate-600">
-          محدوده نمودار: ${minY.toFixed(4)} — ${maxY.toFixed(4)}
+          محدوده نمودار: {formatToman(minY)} — {formatToman(maxY)} تومان
         </p>
       ) : null}
     </div>
