@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import axios from "axios";
 
 const CHART_URL =
   "https://api.coingecko.com/api/v3/coins/tether/market_chart?vs_currency=usd&days=1";
@@ -15,29 +16,18 @@ export type UsdtApiPayload = {
 export async function GET() {
   try {
     const [chartRes, priceRes] = await Promise.all([
-      fetch(CHART_URL, {
+      axios.get<{ prices?: [number, number][] }>(CHART_URL, {
         headers: { accept: "application/json" },
-        cache: "no-store",
       }),
-      fetch(PRICE_URL, {
-        headers: { accept: "application/json" },
-        cache: "no-store",
-      }),
+      axios.get<{ tether?: { usd?: number; usd_24h_change?: number } }>(
+        PRICE_URL,
+        {
+          headers: { accept: "application/json" },
+        },
+      ),
     ]);
-
-    if (!chartRes.ok) {
-      return NextResponse.json(
-        { error: "chart_upstream" },
-        { status: 502 },
-      );
-    }
-
-    const chartJson = (await chartRes.json()) as {
-      prices?: [number, number][];
-    };
-    const priceJson = (await priceRes.json()) as {
-      tether?: { usd?: number; usd_24h_change?: number };
-    };
+    const chartJson = chartRes.data;
+    const priceJson = priceRes.data;
 
     const prices = chartJson.prices ?? [];
     const tether = priceJson.tether ?? {};

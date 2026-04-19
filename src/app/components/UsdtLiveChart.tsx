@@ -1,5 +1,6 @@
 "use client";
 
+import axios from "axios";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 type UsdtApiPayload = {
@@ -37,9 +38,9 @@ export default function UsdtLiveChart() {
       setStatus((s) => (s === "ready" ? s : "loading"));
     }
     try {
-      const res = await fetch("/api/usdt", { cache: "no-store" });
-      if (!res.ok) throw new Error("bad");
-      const json = (await res.json()) as UsdtApiPayload & { error?: string };
+      const { data: json } = await axios.get<UsdtApiPayload & { error?: string }>(
+        "/api/usdt",
+      );
       if ("error" in json && json.error) throw new Error(json.error);
       setData(json);
       setStatus("ready");
