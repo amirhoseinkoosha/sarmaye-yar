@@ -1,28 +1,48 @@
 import Link from "next/link";
+import Header from "@/app/components/Header";
 
 export default function MarketPage() {
   return (
-    <main className="p-4 min-h-screen bg-darkBg text-white">
-      <h1 className="text-xl font-bold mb-4">روند بازار</h1>
+    <main className="app-surface min-h-screen text-white">
+      <div className="mx-auto max-w-2xl px-4 pt-6">
+        <Header />
 
-      <div className="bg-darkCard rounded-xl p-4 mb-6">
-        <h2 className="text-sm text-gray-300 mb-2">شاخص کل</h2>
-        <p className="text-2xl font-bold text-neonBlue">2,346,120</p>
-        <p className="text-neonGreen text-sm mt-1">+1.54%</p>
-        <img src="/chart.png" className="w-full mt-4 opacity-80" />
-      </div>
+        <h1 className="mt-8 text-xl font-bold text-white">روند بازار</h1>
 
-      <h2 className="text-sm text-gray-300 mb-3">پربازده‌ترین نمادها</h2>
+        <section className="card-elevated mt-5 rounded-2xl p-5">
+          <h2 className="text-sm font-medium text-slate-400">شاخص کل</h2>
+          <p
+            dir="ltr"
+            className="mt-2 text-3xl font-bold tracking-tight text-neonBlue"
+          >
+            2,346,120
+          </p>
+          <p className="mt-2 text-sm font-semibold text-neonGreen">+۱٫۵۴٪</p>
+          <div className="mt-5 overflow-hidden rounded-xl border border-white/5 bg-black/25">
+            <img
+              src="/chart.png"
+              className="w-full opacity-85"
+              alt="نمودار شاخص"
+            />
+          </div>
+        </section>
 
-      <div className="space-y-3">
-        {["فولاد", "خودرو", "شستا", "فملی"].map((item) => (
-          <Link key={item} href={`/symbol/${item}`}>
-            <div className="bg-[#1f2937] p-3 rounded-xl flex justify-between cursor-pointer">
-              <span>{item}</span>
-              <span className="text-neonGreen">+2.1%</span>
-            </div>
-          </Link>
-        ))}
+        <h2 className="mb-3 mt-8 text-sm font-semibold text-slate-400">
+          پربازده‌ترین نمادها
+        </h2>
+
+        <div className="space-y-3">
+          {["فولاد", "خودرو", "شستا", "فملی"].map((item) => (
+            <Link key={item} href={`/symbol/${encodeURIComponent(item)}`}>
+              <div className="card-elevated flex cursor-pointer items-center justify-between rounded-2xl px-4 py-3.5 transition hover:border-cyan-400/20">
+                <span className="font-medium">{item}</span>
+                <span className="rounded-lg bg-emerald-500/10 px-2.5 py-1 text-sm font-semibold text-neonGreen">
+                  +۲٫۱٪
+                </span>
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
     </main>
   );

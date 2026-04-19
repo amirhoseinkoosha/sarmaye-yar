@@ -1,17 +1,26 @@
 export default function SymbolChart({ symbol }: { symbol: string }) {
   return (
-    <div className="bg-darkCard rounded-xl p-4 mb-6">
-      <p className="text-gray-300 text-sm mb-2">نمودار {symbol}</p>
+    <section className="card-elevated rounded-2xl p-5">
+      <p className="text-sm font-medium text-slate-400">نمودار {symbol}</p>
 
-      {/* تصویر آزمایشی - بعداً ApexCharts اضافه می‌کنیم */}
-      <img src="/chart.png" className="w-full opacity-90" />
-
-      <div className="flex justify-around text-xs text-gray-400 mt-3">
-        <span>1D</span>
-        <span>1W</span>
-        <span>1M</span>
-        <span>1Y</span>
+      <div className="mt-4 overflow-hidden rounded-xl border border-white/5 bg-black/25">
+        <img
+          src="/chart.png"
+          className="w-full opacity-90"
+          alt={`نمودار ${symbol}`}
+        />
       </div>
-    </div>
+
+      <div className="mt-4 flex justify-between gap-2 text-[11px] font-medium text-slate-500">
+        {["۱ روز", "۱ هفته", "۱ ماه", "۱ سال"].map((t) => (
+          <span
+            key={t}
+            className="flex-1 rounded-lg py-2 text-center transition hover:bg-white/5 hover:text-slate-300"
+          >
+            {t}
+          </span>
+        ))}
+      </div>
+    </section>
   );
 }
