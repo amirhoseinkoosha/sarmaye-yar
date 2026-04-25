@@ -1,4 +1,5 @@
 import ActionButtons from "@/app/components/ActionButtons";
+import BaleWebAppPanel from "@/app/components/BaleWebAppPanel";
 import Header from "@/app/components/Header";
 import MarketCard from "@/app/components/MarketCard";
 import PortfolioCard from "@/app/components/PortfolioCard";
@@ -15,6 +16,7 @@ export default function Home() {
           <MarketCard />
           <PortfolioCard />
           <ActionButtons />
+          <BaleWebAppPanel />
         </div>
       </div>
     </main>
