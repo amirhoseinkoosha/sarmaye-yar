@@ -28,7 +28,7 @@ export default function RootLayout({
       <head>
         <Script
           src="https://tapi.bale.ai/miniapp.js?3"
-          strategy="afterInteractive"
+          strategy="beforeInteractive"
         />
       </head>
       <body className="flex min-h-full flex-col">
