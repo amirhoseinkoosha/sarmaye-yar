@@ -33,20 +33,18 @@ type BaleWindow = Window & {
 
 export default function BaleWebAppPanel() {
   const [logs, setLogs] = useState<string[]>([]);
+  const [webApp, setWebApp] = useState<any>(null);
   const [closingConfirmationEnabled, setClosingConfirmationEnabled] =
-    useState(() => {
-      if (typeof window === "undefined") {
-        return false;
-      }
-      return !!(window as BaleWindow).Bale?.WebApp?.isClosingConfirmationEnabled;
-    });
+    useState(false);
 
-  const webApp = useMemo(() => {
-    if (typeof window === "undefined") {
-      return undefined;
-    }
+  useEffect(() => {
+    if (typeof window === "undefined") return;
 
-    return (window as BaleWindow).Bale?.WebApp;
+    const baleWebApp = (window as any).Bale?.WebApp;
+    if (!baleWebApp) return;
+
+    setWebApp(baleWebApp);
+    setClosingConfirmationEnabled(!!baleWebApp.isClosingConfirmationEnabled);
   }, []);
 
   const addLog = (message: string) => {
@@ -68,7 +66,7 @@ export default function BaleWebAppPanel() {
       addLog("Settings button pressed.");
     });
 
-    webApp.onEvent?.("contactRequested", (event) => {
+    webApp.onEvent?.("contactRequested", (event: any) => {
       const payload =
         typeof event === "object" && event !== null
           ? (event as { status?: string })
@@ -90,9 +88,9 @@ export default function BaleWebAppPanel() {
       return;
     }
 
-    webApp.requestContact?.((wasShared) => {
+    webApp.requestContact?.((wasShared: any) => {
       addLog(
-        wasShared ? "Callback: Number shared by user." : "Callback: No number."
+        wasShared ? "Callback: Number shared by user." : "Callback: No number.",
       );
     });
   };
@@ -141,10 +139,16 @@ export default function BaleWebAppPanel() {
           </div>
 
           <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
-            <button className="btn-glass rounded-xl px-3 py-2" onClick={onCloseMiniApp}>
+            <button
+              className="btn-glass rounded-xl px-3 py-2"
+              onClick={onCloseMiniApp}
+            >
               Close
             </button>
-            <button className="btn-glass rounded-xl px-3 py-2" onClick={onExpand}>
+            <button
+              className="btn-glass rounded-xl px-3 py-2"
+              onClick={onExpand}
+            >
               Expand
             </button>
             <button

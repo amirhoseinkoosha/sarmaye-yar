@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import BottomNav from "@/app/components/BottomNav";
 import "./globals.css";
 
@@ -25,6 +25,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fa" dir="rtl" className={` h-full antialiased`}>
+      <head>
+        <Script
+          src="https://tapi.bale.ai/miniapp.js?3"
+          strategy="beforeInteractive"
+        />
+      </head>
       <body className="flex min-h-full flex-col">
         <div className="flex flex-1 flex-col pb-[4.5rem]">{children}</div>
         <BottomNav />
